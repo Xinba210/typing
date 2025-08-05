@@ -4,6 +4,7 @@ export enum GameState {
   Playing,
   LevelComplete,
   GameEnd,
+  Leaderboard,
 }
 
 export enum LevelType {

@@ -6,6 +6,7 @@ import GameScreen from './components/GameScreen';
 import StartScreen from './components/StartScreen';
 import EndScreen from './components/EndScreen';
 import LevelSelectionScreen from './components/LevelSelectionScreen';
+import LeaderboardScreen from './components/LeaderboardScreen';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.Start);
@@ -21,9 +22,13 @@ const App: React.FC = () => {
     setScore(0);
     setGameState(GameState.Playing);
   }, []);
-  
+
   const goToStart = useCallback(() => {
     setGameState(GameState.Start);
+  }, []);
+
+  const goToLeaderboard = useCallback(() => {
+    setGameState(GameState.Leaderboard);
   }, []);
 
   const handleLevelComplete = useCallback((levelScore: number) => {
@@ -43,37 +48,39 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      if (e.key === 'Enter' || e.key === ' ') {
-        if (gameState === GameState.Start) {
-          goToLevelSelection();
-        } else if (gameState === GameState.LevelComplete) {
-          nextLevel();
-        } else if (gameState === GameState.GameEnd) {
-          goToLevelSelection();
+        if (e.key === 'Enter' || e.key === ' ') {
+          if (gameState === GameState.Start) {
+            goToLevelSelection();
+          } else if (gameState === GameState.LevelComplete) {
+            nextLevel();
+          } else if (gameState === GameState.GameEnd) {
+            goToLevelSelection();
+          } else if (gameState === GameState.Leaderboard) {
+            goToStart();
+          }
         }
-      }
-    };
+      };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [gameState, goToLevelSelection, nextLevel]);
+  }, [gameState, goToLevelSelection, nextLevel, goToStart]);
 
   const renderContent = () => {
-    switch (gameState) {
-      case GameState.Start:
-        return <StartScreen onStart={goToLevelSelection} />;
-      case GameState.LevelSelection:
-        return <LevelSelectionScreen onSelectLevel={selectLevelAndStart} onBack={goToStart} />;
-      case GameState.Playing:
-        return (
-          <GameScreen
-            level={LEVELS[currentLevelIndex]}
-            levelNumber={currentLevelIndex + 1}
-            onLevelComplete={handleLevelComplete}
-          />
-        );
+      switch (gameState) {
+        case GameState.Start:
+          return <StartScreen onStart={goToLevelSelection} onShowLeaderboard={goToLeaderboard} />;
+        case GameState.LevelSelection:
+          return <LevelSelectionScreen onSelectLevel={selectLevelAndStart} onBack={goToStart} />;
+        case GameState.Playing:
+          return (
+            <GameScreen
+              level={LEVELS[currentLevelIndex]}
+              levelNumber={currentLevelIndex + 1}
+              onLevelComplete={handleLevelComplete}
+            />
+          );
       case GameState.LevelComplete: {
         const nextLevelDetails = LEVELS[currentLevelIndex];
         return (
@@ -96,10 +103,12 @@ const App: React.FC = () => {
           </div>
         );
       }
-      case GameState.GameEnd:
-        return <EndScreen score={score} onRestart={goToLevelSelection} />;
-    }
-  };
+        case GameState.GameEnd:
+          return <EndScreen score={score} onRestart={goToLevelSelection} />;
+        case GameState.Leaderboard:
+          return <LeaderboardScreen onBack={goToStart} />;
+      }
+    };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-sky-900 flex flex-col items-center justify-center p-4">
