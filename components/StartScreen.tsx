@@ -3,14 +3,16 @@ import React from 'react';
 
 interface StartScreenProps {
   onStart: () => void;
+  highestScore: number;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
+const StartScreen: React.FC<StartScreenProps> = ({ onStart, highestScore }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center">
       <div className="mb-8">
         <h2 className="text-5xl font-bold text-sky-300 mb-2">準備好挑戰了嗎？</h2>
         <p className="text-xl text-slate-300">測試你的注音打字速度與準確度！</p>
+        <p className="text-2xl text-yellow-300 mt-4">最高紀錄：{highestScore}</p>
       </div>
       <button
         onClick={onStart}

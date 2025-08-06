@@ -10,7 +10,30 @@ import LevelSelectionScreen from './components/LevelSelectionScreen';
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.Start);
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
-  const [score, setScore] = useState(0);
+const [score, setScore] = useState(0);
+const [highestScore, setHighestScore] = useState(0);
+const [completedLevels, setCompletedLevels] = useState<number[]>([]);
+
+  useEffect(() => {
+    const storedHighScore = localStorage.getItem('highScore');
+    const storedCompleted = localStorage.getItem('completedLevels');
+    if (storedHighScore) {
+      const parsed = parseInt(storedHighScore, 10);
+      if (!isNaN(parsed)) {
+        setHighestScore(parsed);
+      }
+    }
+    if (storedCompleted) {
+      try {
+        const parsed = JSON.parse(storedCompleted);
+        if (Array.isArray(parsed)) {
+          setCompletedLevels(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to parse completed levels from localStorage', e);
+      }
+    }
+  }, []);
 
   const goToLevelSelection = useCallback(() => {
     setGameState(GameState.LevelSelection);
@@ -26,15 +49,34 @@ const App: React.FC = () => {
     setGameState(GameState.Start);
   }, []);
 
-  const handleLevelComplete = useCallback((levelScore: number) => {
-    setScore(prev => prev + levelScore);
-    if (currentLevelIndex < LEVELS.length - 1) {
-      setCurrentLevelIndex(prev => prev + 1);
-      setGameState(GameState.LevelComplete);
-    } else {
-      setGameState(GameState.GameEnd);
-    }
-  }, [currentLevelIndex]);
+  const handleLevelComplete = useCallback(
+    (levelScore: number) => {
+      setScore((prev) => {
+        const newScore = prev + levelScore;
+        if (newScore > highestScore) {
+          setHighestScore(newScore);
+          localStorage.setItem('highScore', newScore.toString());
+        }
+        return newScore;
+      });
+
+      setCompletedLevels((prevCompleted) => {
+        const updated = prevCompleted.includes(currentLevelIndex)
+          ? prevCompleted
+          : [...prevCompleted, currentLevelIndex];
+        localStorage.setItem('completedLevels', JSON.stringify(updated));
+        return updated;
+      });
+
+      if (currentLevelIndex < LEVELS.length - 1) {
+        setCurrentLevelIndex((prev) => prev + 1);
+        setGameState(GameState.LevelComplete);
+      } else {
+        setGameState(GameState.GameEnd);
+      }
+    },
+    [currentLevelIndex, highestScore]
+  );
 
   const nextLevel = useCallback(() => {
     setGameState(GameState.Playing);
@@ -63,9 +105,15 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (gameState) {
       case GameState.Start:
-        return <StartScreen onStart={goToLevelSelection} />;
+        return <StartScreen onStart={goToLevelSelection} highestScore={highestScore} />;
       case GameState.LevelSelection:
-        return <LevelSelectionScreen onSelectLevel={selectLevelAndStart} onBack={goToStart} />;
+        return (
+          <LevelSelectionScreen
+            completedLevels={completedLevels}
+            onSelectLevel={selectLevelAndStart}
+            onBack={goToStart}
+          />
+        );
       case GameState.Playing:
         return (
           <GameScreen
@@ -97,7 +145,7 @@ const App: React.FC = () => {
         );
       }
       case GameState.GameEnd:
-        return <EndScreen score={score} onRestart={goToLevelSelection} />;
+        return <EndScreen score={score} highestScore={highestScore} onRestart={goToLevelSelection} />;
     }
   };
 
