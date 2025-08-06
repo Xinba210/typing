@@ -11,6 +11,14 @@ const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.Start);
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [isSpeechEnabled, setIsSpeechEnabled] = useState(() => {
+    const stored = localStorage.getItem('isSpeechEnabled');
+    return stored === null ? true : stored === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('isSpeechEnabled', String(isSpeechEnabled));
+  }, [isSpeechEnabled]);
 
   const goToLevelSelection = useCallback(() => {
     setGameState(GameState.LevelSelection);
@@ -63,7 +71,13 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (gameState) {
       case GameState.Start:
-        return <StartScreen onStart={goToLevelSelection} />;
+        return (
+          <StartScreen
+            onStart={goToLevelSelection}
+            isSpeechEnabled={isSpeechEnabled}
+            onToggleSpeech={() => setIsSpeechEnabled(prev => !prev)}
+          />
+        );
       case GameState.LevelSelection:
         return <LevelSelectionScreen onSelectLevel={selectLevelAndStart} onBack={goToStart} />;
       case GameState.Playing:
@@ -72,6 +86,8 @@ const App: React.FC = () => {
             level={LEVELS[currentLevelIndex]}
             levelNumber={currentLevelIndex + 1}
             onLevelComplete={handleLevelComplete}
+            isSpeechEnabled={isSpeechEnabled}
+            onToggleSpeech={() => setIsSpeechEnabled(prev => !prev)}
           />
         );
       case GameState.LevelComplete: {

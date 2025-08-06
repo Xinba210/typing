@@ -9,6 +9,8 @@ interface GameScreenProps {
   level: Level;
   levelNumber: number;
   onLevelComplete: (score: number) => void;
+  isSpeechEnabled: boolean;
+  onToggleSpeech: () => void;
 }
 
 type GamePhase = 'introduction' | 'practice';
@@ -20,7 +22,7 @@ const SpeakerIcon = () => (
 );
 
 
-const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComplete }) => {
+const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComplete, isSpeechEnabled, onToggleSpeech }) => {
   const [practiceUnits, setPracticeUnits] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInputs, setUserInputs] = useState<string[]>([]);
@@ -39,7 +41,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
       units = (level.content as string).split('');
       setPhase('introduction');
       setIntroductionIndex(0);
-      speak(units[0]);
+      speak(units[0], isSpeechEnabled);
     } else if (level.type === LevelType.Syllable || level.type === LevelType.Word) {
       units = level.content as string[];
       setPhase('practice');
@@ -52,7 +54,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
     setIncorrectAttempts(0);
     setStartTime(Date.now());
     setActiveKey(null);
-  }, [level]);
+  }, [level, isSpeechEnabled]);
   
   useEffect(() => {
     if (phase === 'practice') {
@@ -82,7 +84,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
         if (introductionIndex < practiceUnits.length - 1) {
             const nextIndex = introductionIndex + 1;
             setIntroductionIndex(nextIndex);
-            speak(practiceUnits[nextIndex]);
+            speak(practiceUnits[nextIndex], isSpeechEnabled);
         } else {
             setPhase('practice');
             setStartTime(Date.now());
@@ -90,7 +92,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
     } else {
         handleIncorrect();
     }
-  }, [introductionIndex, practiceUnits, handleIncorrect]);
+  }, [introductionIndex, practiceUnits, handleIncorrect, isSpeechEnabled]);
 
 
   useEffect(() => {
@@ -162,6 +164,18 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
   return (
     <div className="flex flex-col h-full">
         <style>{`.animate-shake { animation: shake 0.5s; } @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }`}</style>
+      <div className="flex justify-end mb-4">
+        <label className="flex items-center gap-2 text-slate-300">
+          <input
+            type="checkbox"
+            checked={isSpeechEnabled}
+            onChange={() => onToggleSpeech()}
+            className="accent-sky-500"
+          />
+          語音
+        </label>
+      </div>
+
       <div className="flex justify-between items-center mb-6 p-4 bg-slate-800/50 rounded-lg">
         <div>
           <h2 className="text-2xl font-bold text-sky-300">{level.title}</h2>
@@ -181,7 +195,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
                 <p className="text-2xl text-slate-300 mb-4">教學模式：認識注音與鍵盤位置</p>
                 <div className="flex items-center gap-4 mb-4">
                     <div className="text-9xl font-bold p-8 rounded-2xl bg-slate-800/50">{currentIntroSymbol}</div>
-                    <button onClick={() => speak(currentIntroSymbol)} className="p-4 rounded-full bg-sky-500/50 hover:bg-sky-500 transition-colors">
+                    <button onClick={() => speak(currentIntroSymbol, isSpeechEnabled)} className="p-4 rounded-full bg-sky-500/50 hover:bg-sky-500 transition-colors">
                         <SpeakerIcon />
                     </button>
                 </div>
