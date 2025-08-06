@@ -10,12 +10,13 @@ export enum LevelType {
   SingleBopomofo, // Practice single zhuyin symbols like ㄅ, ㄆ, ㄇ, ㄈ
   Syllable,       // Practice combinations like ㄅㄚ, ㄆㄛˋ
   Word,           // Practice actual words like 你好, 台灣
+  Random,         // Randomly generated practice content
 }
 
 export interface Level {
   title: string;
   type: LevelType;
-  content: string | string[]; // string for SingleBopomofo, string[] for Syllable/Word
+  content: string | string[]; // string for SingleBopomofo, string[] for Syllable/Word/Random
   description?: string;
 }
 

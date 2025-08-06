@@ -19,6 +19,19 @@ export const LEVELS: Level[] = [
   { title: "第十六課：挑戰長句", type: LevelType.Word, content: ["我喜歡用電腦學習新知識"], description: "挑戰完整的句子輸入。"},
 ];
 
+export function generateRandomLevel(): Level {
+  const wordPool = LEVELS.filter(l => l.type === LevelType.Word)
+    .flatMap(l => l.content as string[]);
+  const shuffled = [...wordPool].sort(() => Math.random() - 0.5);
+  const content = shuffled.slice(0, Math.min(3, shuffled.length));
+  return {
+    title: '每日練習',
+    type: LevelType.Random,
+    content,
+    description: '隨機練習常用詞彙。',
+  };
+}
+
 export const ZHUYIN_MAP: { [key: string]: string } = {
   // Original
   '你': 'ㄋㄧˇ', '好': 'ㄏㄠˇ', '台': 'ㄊㄞˊ', '灣': 'ㄨㄢ',

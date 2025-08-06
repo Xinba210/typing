@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { GameState } from './types';
+import { GameState, Level } from './types';
 import { LEVELS } from './constants';
 import GameScreen from './components/GameScreen';
 import StartScreen from './components/StartScreen';
@@ -10,31 +10,41 @@ import LevelSelectionScreen from './components/LevelSelectionScreen';
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.Start);
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+  const [customLevel, setCustomLevel] = useState<Level | null>(null);
   const [score, setScore] = useState(0);
 
   const goToLevelSelection = useCallback(() => {
+    setCustomLevel(null);
     setGameState(GameState.LevelSelection);
   }, []);
 
-  const selectLevelAndStart = useCallback((levelIndex: number) => {
-    setCurrentLevelIndex(levelIndex);
+  const selectLevelAndStart = useCallback((level: Level, index?: number) => {
+    if (typeof index === 'number') {
+      setCurrentLevelIndex(index);
+      setCustomLevel(null);
+    } else {
+      setCustomLevel(level);
+    }
     setScore(0);
     setGameState(GameState.Playing);
   }, []);
   
   const goToStart = useCallback(() => {
+    setCustomLevel(null);
     setGameState(GameState.Start);
   }, []);
 
   const handleLevelComplete = useCallback((levelScore: number) => {
     setScore(prev => prev + levelScore);
-    if (currentLevelIndex < LEVELS.length - 1) {
+    if (customLevel) {
+      setGameState(GameState.GameEnd);
+    } else if (currentLevelIndex < LEVELS.length - 1) {
       setCurrentLevelIndex(prev => prev + 1);
       setGameState(GameState.LevelComplete);
     } else {
       setGameState(GameState.GameEnd);
     }
-  }, [currentLevelIndex]);
+  }, [currentLevelIndex, customLevel]);
 
   const nextLevel = useCallback(() => {
     setGameState(GameState.Playing);
@@ -69,8 +79,8 @@ const App: React.FC = () => {
       case GameState.Playing:
         return (
           <GameScreen
-            level={LEVELS[currentLevelIndex]}
-            levelNumber={currentLevelIndex + 1}
+            level={customLevel ?? LEVELS[currentLevelIndex]}
+            levelNumber={customLevel ? 0 : currentLevelIndex + 1}
             onLevelComplete={handleLevelComplete}
           />
         );

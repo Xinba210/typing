@@ -40,7 +40,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
       setPhase('introduction');
       setIntroductionIndex(0);
       speak(units[0]);
-    } else if (level.type === LevelType.Syllable || level.type === LevelType.Word) {
+    } else if (level.type === LevelType.Syllable || level.type === LevelType.Word || level.type === LevelType.Random) {
       units = level.content as string[];
       setPhase('practice');
     }
@@ -165,7 +165,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ level, levelNumber, onLevelComp
       <div className="flex justify-between items-center mb-6 p-4 bg-slate-800/50 rounded-lg">
         <div>
           <h2 className="text-2xl font-bold text-sky-300">{level.title}</h2>
-          <p className="text-slate-400">第 {levelNumber} 關</p>
+          {level.type !== LevelType.Random && <p className="text-slate-400">第 {levelNumber} 關</p>}
           {level.description && <p className="text-sm text-slate-300 mt-1">{level.description}</p>}
         </div>
         <div className="text-right">

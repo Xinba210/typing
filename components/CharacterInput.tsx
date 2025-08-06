@@ -78,7 +78,7 @@ const CharacterInput: React.FC<CharacterInputProps> = ({
   }, [virtualEvent, isActive, processInput]);
 
   const isPracticeMode = levelType === LevelType.SingleBopomofo || levelType === LevelType.Syllable;
-  const isLongPhrase = levelType === LevelType.Word && targetChar.length > 5;
+  const isLongPhrase = (levelType === LevelType.Word || levelType === LevelType.Random) && targetChar.length > 5;
 
   const wrapperClasses = `
     relative flex flex-col items-center justify-center transition-all duration-300
