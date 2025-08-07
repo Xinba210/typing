@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { GameState } from './types';
 import { LEVELS } from './constants';
